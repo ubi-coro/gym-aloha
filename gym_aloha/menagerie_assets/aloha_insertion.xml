@@ -1,0 +1,32 @@
+<mujoco>
+<!--    <option timestep="0.001" integrator="RK4"/>-->
+    <include file="scene.xml"/>
+    <worldbody>
+
+        <body name="red_cube" pos="0.0 0.0 0.06">
+            <joint name="red_cube_joint" type="free" frictionloss="0.01"/>
+            <inertial pos="0.0 0.0 0.0"  mass="0.05" diaginertia="0.000025 0.000025 0.000025"/>
+            <geom condim="4" solimp="0.9 0.95 0.005" solref="0.005 1" friction="0.8 0.01 0.01" pos="0 0 0"
+                  size="0.03 0.03 0.03" type="box" name="red_cube" rgba="1 0 0 1"/>
+        </body>
+
+        <body name="blue_cube" pos="0.1 0.0 0.06">
+            <joint name="blue_cube_joint" type="free" frictionloss="0.01"/>
+            <inertial pos="0.0 0.0 0.0"  mass="0.06" diaginertia="0.000013 0.000013 0.000013"/>
+            <geom condim="4" solimp="0.9 0.95 0.005" solref="0.005 1" friction="0.8 0.01 0.01" pos="0 0 0"
+                  size="0.02 0.02 0.02" type="box" name="blue_cube" rgba="0 0 1 1"/>
+        </body>
+
+        <body name="green_cube" pos="0.1 0.2 0.06">
+            <joint name="green_cube_joint" type="free" frictionloss="0.01"/>
+            <inertial pos="0.0 0.0 0.0"  mass="0.08" diaginertia="0.000003 0.000003 0.000003"/>
+            <geom condim="4" solimp="0.9 0.95 0.005" solref="0.005 1" friction="0.8 0.01 0.01" pos="0 0 0"
+                  size="0.01 0.01 0.01" type="box" name="green_cube" rgba="0 1 0 1"/>
+        </body>
+
+
+    </worldbody>
+
+    <!--<include file="keyframe_insertion.xml"/>-->
+
+</mujoco>

@@ -142,7 +142,7 @@ class AlohaEnv2(gym.Env):
         time_limit = float("inf")
 
         if task_name == "insertion":
-            xml_path = MENAGERIE_ASSETS_DIR / "scene.xml"
+            xml_path = MENAGERIE_ASSETS_DIR / "aloha_insertion.xml"
             physics = mujoco.Physics.from_xml_path(str(xml_path))
             task = InsertionTaskMenagerie()
         else:
