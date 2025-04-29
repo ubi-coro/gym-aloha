@@ -33,5 +33,9 @@ print(f"Execution time: {round(end_time - start_time, 2)} seconds")
 
 env.close()
 
+video_dir = "example"
+if not os.path.exists(video_dir):
+    os.makedirs(video_dir)
+
 for key, value in frames_dict.items():
-    imageio.mimsave(f"example/{key}.mp4", np.stack(value), fps=10)
+    imageio.mimsave(f"{video_dir}/{key}.mp4", np.stack(value), fps=10)

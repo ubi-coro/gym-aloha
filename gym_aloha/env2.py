@@ -3,12 +3,12 @@ import numpy as np
 from dm_control import mujoco
 from dm_control.rl import control
 from gymnasium import spaces
-from robot_descriptions import aloha_mj_description
 
 from gym_aloha.constants import (
     ACTIONS,
     DT,
     JOINTS,
+    MENAGERIE_ASSETS_DIR,
 )
 from gym_aloha.tasks.sim_menagerie import BOX_POSE, InsertionTaskMenagerie
 from gym_aloha.utils import sample_box_pose, sample_insertion_pose
@@ -142,7 +142,7 @@ class AlohaEnv2(gym.Env):
         time_limit = float("inf")
 
         if task_name == "insertion":
-            xml_path = aloha_mj_description.MJCF_PATH
+            xml_path = MENAGERIE_ASSETS_DIR / "scene.xml"
             physics = mujoco.Physics.from_xml_path(str(xml_path))
             task = InsertionTaskMenagerie()
         else:

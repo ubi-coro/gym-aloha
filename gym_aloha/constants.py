@@ -67,6 +67,7 @@ START_ARM_POSE = [
 ]
 
 ASSETS_DIR = Path(__file__).parent.resolve() / "assets"  # note: absolute path
+MENAGERIE_ASSETS_DIR = Path(__file__).parent.resolve() / "menagerie_assets"  # note: absolute path
 
 # Left finger position limits (qpos[7]), right_finger = -1 * left_finger
 MASTER_GRIPPER_POSITION_OPEN = 0.02417
