@@ -72,8 +72,8 @@ MENAGERIE_ASSETS_DIR = Path(__file__).parent.resolve() / "menagerie_assets"  # n
 # Left finger position limits (qpos[7]), right_finger = -1 * left_finger
 MASTER_GRIPPER_POSITION_OPEN = 0.02417
 MASTER_GRIPPER_POSITION_CLOSE = 0.01244
-PUPPET_GRIPPER_POSITION_OPEN = 0.05800
-PUPPET_GRIPPER_POSITION_CLOSE = 0.01844
+PUPPET_GRIPPER_POSITION_OPEN = 0.037
+PUPPET_GRIPPER_POSITION_CLOSE = 0.002
 
 # Gripper joint limits (qpos[6])
 MASTER_GRIPPER_JOINT_OPEN = 0.3083
