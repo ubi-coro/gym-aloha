@@ -107,11 +107,7 @@ class BimanualViperXTask(base.Task):
         raise NotImplementedError
 
 
-# class TransferCubeTask(BimanualViperXTask):
-#     TODO(jzilke)
-
-
-class InsertionTaskMenagerie(BimanualViperXTask):
+class TransferCubeTask(BimanualViperXTask):
     def __init__(self, random=None):
         super().__init__(random=random)
         self.max_reward = 4
@@ -125,7 +121,8 @@ class InsertionTaskMenagerie(BimanualViperXTask):
             start_pose = START_ARM_POSE[:7] + START_ARM_POSE[8:15]
             np.copyto(physics.data.ctrl, start_pose)
             assert BOX_POSE[0] is not None
-            # physics.named.data.qpos[-7 * 2 :] = BOX_POSE[0]  # two objects # TODO(jzilke) Add boxes to scene
+            physics.named.data.qpos[-7:] = BOX_POSE[0][:7]
+            physics.model.body_pos[physics.model.name2id("goal_pos", "body")] = BOX_POSE[0][7:10]
             # print(f"{BOX_POSE=}")
         super().initialize_episode(physics)
 
@@ -145,38 +142,31 @@ class InsertionTaskMenagerie(BimanualViperXTask):
             contact_pair = (name_geom_1, name_geom_2)
             all_contact_pairs.append(contact_pair)
 
-        touch_right_gripper = ("red_peg", "vx300s_right/10_right_gripper_finger") in all_contact_pairs
-        touch_left_gripper = (
-            ("socket-1", "vx300s_left/10_left_gripper_finger") in all_contact_pairs
-            or ("socket-2", "vx300s_left/10_left_gripper_finger") in all_contact_pairs
-            or ("socket-3", "vx300s_left/10_left_gripper_finger") in all_contact_pairs
-            or ("socket-4", "vx300s_left/10_left_gripper_finger") in all_contact_pairs
-        )
+        touch_goal = ("goal_pos", "red_box") in all_contact_pairs
 
-        peg_touch_table = ("red_peg", "table") in all_contact_pairs
-        socket_touch_table = (
-            ("socket-1", "table") in all_contact_pairs
-            or ("socket-2", "table") in all_contact_pairs
-            or ("socket-3", "table") in all_contact_pairs
-            or ("socket-4", "table") in all_contact_pairs
+        in_left_gripper = (
+            ("left/left_g0", "red_box") in all_contact_pairs
+            or ("left/left_g1", "red_box") in all_contact_pairs
+            and ("left/right_g0", "red_box") in all_contact_pairs
+            or ("left/right_g1", "red_box") in all_contact_pairs
         )
-        peg_touch_socket = (
-            ("red_peg", "socket-1") in all_contact_pairs
-            or ("red_peg", "socket-2") in all_contact_pairs
-            or ("red_peg", "socket-3") in all_contact_pairs
-            or ("red_peg", "socket-4") in all_contact_pairs
+        in_right_gripper = (
+            ("right/left_g0", "red_box") in all_contact_pairs
+            or ("right/left_g1", "red_box") in all_contact_pairs
+            and ("right/right_g0", "red_box") in all_contact_pairs
+            or ("right/right_g1", "red_box") in all_contact_pairs
         )
-        pin_touched = ("red_peg", "pin") in all_contact_pairs
+        in_gripper = in_left_gripper or in_right_gripper
+
+        touch_table = ("table", "red_box") in all_contact_pairs
 
         reward = 0
-        if touch_left_gripper and touch_right_gripper:  # touch both
+        if in_gripper and touch_table:
             reward = 1
-        if (
-            touch_left_gripper and touch_right_gripper and (not peg_touch_table) and (not socket_touch_table)
-        ):  # grasp both
+        if in_gripper and not touch_table:
             reward = 2
-        if peg_touch_socket and (not peg_touch_table) and (not socket_touch_table):  # peg and socket touching
+        if touch_goal and in_gripper:
             reward = 3
-        if pin_touched:  # successful insertion
+        if touch_goal and not in_gripper:  # successful placement
             reward = 4
         return reward

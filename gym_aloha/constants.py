@@ -4,7 +4,6 @@ from pathlib import Path
 DT = 0.02  # 0.02 ms -> 1/0.2 = 50 hz
 FPS = 50
 
-
 JOINTS = [
     # absolute joint position
     "left_arm_waist",
@@ -46,22 +45,21 @@ ACTIONS = [
     "right_arm_gripper",
 ]
 
-
 START_ARM_POSE = [
-    0,
-    -0.96,
-    1.16,
-    0,
-    -0.3,
-    0,
+    -0.0065021,
+    -1.61694981,
+    1.57752399,
+    -0.07515611,
+    -0.06880028,
+    0.08922534,
     0.02239,
     -0.02239,
-    0,
-    -0.96,
-    1.16,
-    0,
-    -0.3,
-    0,
+    -0.00614049,
+    -1.59853427,
+    1.57760158,
+    -3.13947111,
+    0.1754169,
+    3.04271502,
     0.02239,
     -0.02239,
 ]
@@ -73,7 +71,7 @@ MENAGERIE_ASSETS_DIR = Path(__file__).parent.resolve() / "menagerie_assets"  # n
 MASTER_GRIPPER_POSITION_OPEN = 0.02417
 MASTER_GRIPPER_POSITION_CLOSE = 0.01244
 PUPPET_GRIPPER_POSITION_OPEN = 0.037
-PUPPET_GRIPPER_POSITION_CLOSE = 0.002
+PUPPET_GRIPPER_POSITION_CLOSE = 0.008
 
 # Gripper joint limits (qpos[6])
 MASTER_GRIPPER_JOINT_OPEN = 0.3083
@@ -82,6 +80,7 @@ PUPPET_GRIPPER_JOINT_OPEN = 1.4910
 PUPPET_GRIPPER_JOINT_CLOSE = -0.6213
 
 MASTER_GRIPPER_JOINT_MID = (MASTER_GRIPPER_JOINT_OPEN + MASTER_GRIPPER_JOINT_CLOSE) / 2
+
 
 ############################ Helper functions ############################
 

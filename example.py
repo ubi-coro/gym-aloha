@@ -5,7 +5,7 @@ import gymnasium as gym
 import numpy as np
 import gym_aloha
 
-env = gym.make("gym_aloha/AlohaInsertion-v1")
+env = gym.make("gym_aloha/AlohaTransferCube-v1")
 observation, info = env.reset()
 frames_dict = {key: [] for key in observation["pixels"].keys()}
 

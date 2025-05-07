@@ -10,8 +10,8 @@ from gym_aloha.constants import (
     JOINTS,
     MENAGERIE_ASSETS_DIR,
 )
-from gym_aloha.tasks.sim_menagerie import BOX_POSE, InsertionTaskMenagerie
-from gym_aloha.utils import sample_box_pose, sample_insertion_pose
+from gym_aloha.tasks.sim_menagerie import BOX_POSE, TransferCubeTask
+from gym_aloha.utils import sample_insertion_pose, sample_transfer_box_pose
 
 
 class AlohaEnv2(gym.Env):
@@ -141,10 +141,10 @@ class AlohaEnv2(gym.Env):
         # time limit is controlled by StepCounter in env factory
         time_limit = float("inf")
 
-        if task_name == "insertion":
-            xml_path = MENAGERIE_ASSETS_DIR / "aloha_insertion.xml"
+        if task_name == "transfer_cube":
+            xml_path = MENAGERIE_ASSETS_DIR / "aloha_transfer_cube.xml"
             physics = mujoco.Physics.from_xml_path(str(xml_path))
-            task = InsertionTaskMenagerie()
+            task = TransferCubeTask()
         else:
             raise NotImplementedError(task_name)
 
@@ -182,7 +182,7 @@ class AlohaEnv2(gym.Env):
 
         # TODO(rcadene): do not use global variable for this
         if self.task == "transfer_cube":
-            BOX_POSE[0] = sample_box_pose(seed)  # used in sim reset
+            BOX_POSE[0] = np.concatenate(sample_transfer_box_pose(seed))  # used in sim reset
         elif self.task == "insertion":
             BOX_POSE[0] = np.concatenate(sample_insertion_pose(seed))  # used in sim reset
         else:
@@ -190,7 +190,11 @@ class AlohaEnv2(gym.Env):
 
         raw_obs = self._env.reset()
 
-        observation = self._format_raw_obs(raw_obs.observation)
+        for _ in range(100):
+            self._env.physics.step()  # hotfix to prevent the gripper from getting stuck when the leader gripper is closed at the beginning TODO(jzilke)
+
+        raw_obs = self._env._task.get_observation(self._env.physics)
+        observation = self._format_raw_obs(raw_obs)
 
         info = {"is_success": False}
         return observation, info

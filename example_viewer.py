@@ -5,7 +5,7 @@ import mujoco.viewer
 
 os.environ["MUJOCO_GL"] = "egl"
 
-env = gym.make("gym_aloha/AlohaInsertion-v1")
+env = gym.make("gym_aloha/AlohaTransferCube-v1")
 observation, info = env.reset()
 
 
@@ -21,11 +21,9 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
     viewer.user_scn.flags[mujoco.mjtRndFlag.mjRND_CULL_FACE] = 0
     viewer.sync()
     while viewer.is_running():
-        action = env.action_space.sample()
-        observation, reward, terminated, truncated, info = env.step(action)
+        # no env.step()
+        mujoco.mj_step(model, data)
         viewer.sync()
-        if terminated or truncated:
-            observation, info = env.reset()
 
 
 env.close()
