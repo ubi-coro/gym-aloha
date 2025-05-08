@@ -10,7 +10,7 @@ from gym_aloha.constants import (
     JOINTS,
     MENAGERIE_ASSETS_DIR,
 )
-from gym_aloha.tasks.sim_menagerie import BOX_POSE, TransferCubeTask
+from gym_aloha.tasks.sim_menagerie import BOX_POSE, CAMERA_LIST, TransferCubeTask
 from gym_aloha.utils import sample_insertion_pose, sample_transfer_box_pose
 
 
@@ -27,6 +27,7 @@ class AlohaEnv2(gym.Env):
         observation_height=480,
         visualization_width=640,
         visualization_height=480,
+        camera_list=CAMERA_LIST,
     ):
         super().__init__()
         self.task = task
@@ -36,6 +37,7 @@ class AlohaEnv2(gym.Env):
         self.observation_height = observation_height
         self.visualization_width = visualization_width
         self.visualization_height = visualization_height
+        self.camera_list = camera_list
 
         self._env = self._make_env_task(self.task)
 
@@ -64,46 +66,15 @@ class AlohaEnv2(gym.Env):
         self.action_space = spaces.Box(low=-1, high=1, shape=(len(ACTIONS),), dtype=np.float32)
 
     def get_cams(self):
-        return spaces.Dict(
-            {
-                "wrist_cam_right": spaces.Box(
-                    low=0,
-                    high=255,
-                    shape=(self.observation_height, self.observation_width, 3),
-                    dtype=np.uint8,
-                ),
-                "wrist_cam_left": spaces.Box(
-                    low=0,
-                    high=255,
-                    shape=(self.observation_height, self.observation_width, 3),
-                    dtype=np.uint8,
-                ),
-                "teleoperator_pov": spaces.Box(
-                    low=0,
-                    high=255,
-                    shape=(self.observation_height, self.observation_width, 3),
-                    dtype=np.uint8,
-                ),
-                "collaborator_pov": spaces.Box(
-                    low=0,
-                    high=255,
-                    shape=(self.observation_height, self.observation_width, 3),
-                    dtype=np.uint8,
-                ),
-                "overhead_cam": spaces.Box(
-                    low=0,
-                    high=255,
-                    shape=(self.observation_height, self.observation_width, 3),
-                    dtype=np.uint8,
-                ),
-                "worms_eye_cam": spaces.Box(
-                    low=0,
-                    high=255,
-                    shape=(self.observation_height, self.observation_width, 3),
-                    dtype=np.uint8,
-                ),
-            }
-        )
+        cam_dict = {}
+        for cam in self.camera_list:
+            cam_dict[cam] = spaces.Box(
+                low=0,
+                high=255,
+                shape=(self.observation_height, self.observation_width, 3),
+                dtype=np.uint8,
+            )
+        return spaces.Dict(cam_dict)
 
     def render(self):
         return self._render(visualize=True)
@@ -125,12 +96,8 @@ class AlohaEnv2(gym.Env):
 
         if self.render_mode == "rgb_array_list":
             images = [
-                self._env.physics.render(height=height, width=width, camera_id="wrist_cam_left"),
-                self._env.physics.render(height=height, width=width, camera_id="wrist_cam_right"),
-                self._env.physics.render(height=height, width=width, camera_id="teleoperator_pov"),
-                self._env.physics.render(height=height, width=width, camera_id="collaborator_pov"),
-                self._env.physics.render(height=height, width=width, camera_id="overhead_cam"),
-                self._env.physics.render(height=height, width=width, camera_id="worms_eye_cam"),
+                self._env.physics.render(height=height, width=width, camera_id=cam)
+                for cam in self.camera_list
             ]
             return images
         else:  # self.render_mode == "rgb_array"
@@ -144,7 +111,7 @@ class AlohaEnv2(gym.Env):
         if task_name == "transfer_cube":
             xml_path = MENAGERIE_ASSETS_DIR / "aloha_transfer_cube.xml"
             physics = mujoco.Physics.from_xml_path(str(xml_path))
-            task = TransferCubeTask()
+            task = TransferCubeTask(self.camera_list)
         else:
             raise NotImplementedError(task_name)
 
@@ -160,14 +127,7 @@ class AlohaEnv2(gym.Env):
             obs = {"wrist_cam_right": raw_obs["images"]["wrist_cam_right"].copy()}
         elif self.obs_type == "pixels_agent_pos":
             obs = {
-                "pixels": {
-                    "wrist_cam_right": raw_obs["images"]["wrist_cam_right"].copy(),
-                    "wrist_cam_left": raw_obs["images"]["wrist_cam_left"].copy(),
-                    "teleoperator_pov": raw_obs["images"]["teleoperator_pov"].copy(),
-                    "collaborator_pov": raw_obs["images"]["collaborator_pov"].copy(),
-                    "overhead_cam": raw_obs["images"]["overhead_cam"].copy(),
-                    "worms_eye_cam": raw_obs["images"]["worms_eye_cam"].copy(),
-                },
+                "pixels": {cam: raw_obs["images"][cam].copy() for cam in self.camera_list},
                 "agent_pos": raw_obs["qpos"],
             }
         return obs

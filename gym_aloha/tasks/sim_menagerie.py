@@ -11,7 +11,14 @@ from gym_aloha.constants import (
 )
 
 BOX_POSE = [None]  # to be changed from outside
-
+CAMERA_LIST = [
+    "wrist_cam_right",
+    "wrist_cam_left",
+    "teleoperator_pov",
+    "collaborator_pov",
+    "overhead_cam",
+    "worms_eye_cam",
+]
 """
 Environment for simulated robot bi-manual manipulation, with joint position control
 Action space:      [left_arm_qpos (6),             # absolute joint position
@@ -32,8 +39,9 @@ Observation space: {"qpos": Concat[ left_arm_qpos (6),         # absolute joint 
 
 
 class BimanualViperXTask(base.Task):
-    def __init__(self, random=None):
+    def __init__(self, camera_list=CAMERA_LIST, random=None):
         super().__init__(random=random)
+        self.camera_list = camera_list
 
     def before_step(self, action, physics):
         left_arm_action = action[:6]
@@ -89,16 +97,8 @@ class BimanualViperXTask(base.Task):
         obs["qvel"] = self.get_qvel(physics)
         obs["env_state"] = self.get_env_state(physics)
         obs["images"] = {}
-        obs["images"]["wrist_cam_right"] = physics.render(height=480, width=640, camera_id="wrist_cam_right")
-        obs["images"]["wrist_cam_left"] = physics.render(height=480, width=640, camera_id="wrist_cam_left")
-        obs["images"]["teleoperator_pov"] = physics.render(
-            height=480, width=640, camera_id="teleoperator_pov"
-        )
-        obs["images"]["collaborator_pov"] = physics.render(
-            height=480, width=640, camera_id="collaborator_pov"
-        )
-        obs["images"]["overhead_cam"] = physics.render(height=480, width=640, camera_id="overhead_cam")
-        obs["images"]["worms_eye_cam"] = physics.render(height=480, width=640, camera_id="worms_eye_cam")
+        for camera_id in self.camera_list:
+            obs["images"][camera_id] = physics.render(height=480, width=640, camera_id=camera_id)
 
         return obs
 
@@ -108,8 +108,8 @@ class BimanualViperXTask(base.Task):
 
 
 class TransferCubeTask(BimanualViperXTask):
-    def __init__(self, random=None):
-        super().__init__(random=random)
+    def __init__(self, camera_list=CAMERA_LIST, random=None):
+        super().__init__(camera_list=camera_list, random=random)
         self.max_reward = 4
 
     def initialize_episode(self, physics):
