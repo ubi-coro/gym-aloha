@@ -147,13 +147,13 @@ class TransferCubeTask(BimanualViperXTask):
         in_left_gripper = (
             ("left/left_g0", "red_box") in all_contact_pairs
             or ("left/left_g1", "red_box") in all_contact_pairs
-            and ("left/right_g0", "red_box") in all_contact_pairs
+            or ("left/right_g0", "red_box") in all_contact_pairs
             or ("left/right_g1", "red_box") in all_contact_pairs
         )
         in_right_gripper = (
             ("right/left_g0", "red_box") in all_contact_pairs
             or ("right/left_g1", "red_box") in all_contact_pairs
-            and ("right/right_g0", "red_box") in all_contact_pairs
+            or ("right/right_g0", "red_box") in all_contact_pairs
             or ("right/right_g1", "red_box") in all_contact_pairs
         )
         in_gripper = in_left_gripper or in_right_gripper
@@ -163,7 +163,7 @@ class TransferCubeTask(BimanualViperXTask):
         reward = 0
         if in_gripper and touch_table:
             reward = 1
-        if in_gripper and not touch_table:
+        if not touch_table:
             reward = 2
         if touch_goal and in_gripper:
             reward = 3
