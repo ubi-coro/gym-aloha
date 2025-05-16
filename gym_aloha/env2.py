@@ -150,7 +150,7 @@ class AlohaEnv2(gym.Env):
 
         raw_obs = self._env.reset()
 
-        for _ in range(100):
+        for _ in range(1000):
             self._env.physics.step()  # hotfix to prevent the gripper from getting stuck when the leader gripper is closed at the beginning TODO(jzilke)
 
         raw_obs = self._env._task.get_observation(self._env.physics)
@@ -160,6 +160,7 @@ class AlohaEnv2(gym.Env):
         return observation, info
 
     def step(self, action):
+        global START_ARM_POSE
         assert action.ndim == 1
         # TODO(rcadene): add info["is_success"] and info["success"] ?
 
@@ -173,6 +174,7 @@ class AlohaEnv2(gym.Env):
         observation = self._format_raw_obs(raw_obs)
 
         truncated = False
+        START_ARM_POSE[:16] = self._env.physics.named.data.qpos[:16]
         return observation, reward, terminated, truncated, info
 
     def get_ncams(self):

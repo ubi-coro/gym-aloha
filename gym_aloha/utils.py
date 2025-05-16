@@ -16,7 +16,7 @@ def sample_box_pose(seed=None):
 
 
 def sample_transfer_box_pose(seed=None):
-    x_range = [-0.25, 0.25]
+    x_range = [-0.2, 0.0]
     y_range = [-0.2, 0.2]
     z_range = [0.1, 0.1]
 
