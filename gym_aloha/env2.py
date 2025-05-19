@@ -9,6 +9,7 @@ from gym_aloha.constants import (
     DT,
     JOINTS,
     MENAGERIE_ASSETS_DIR,
+    START_ARM_POSE,
 )
 from gym_aloha.tasks.sim_menagerie import BOX_POSE, CAMERA_LIST, TransferCubeTask
 from gym_aloha.utils import sample_insertion_pose, sample_transfer_box_pose
@@ -160,7 +161,7 @@ class AlohaEnv2(gym.Env):
         return observation, info
 
     def step(self, action):
-        global START_ARM_POSE
+        # global START_ARM_POSE
         assert action.ndim == 1
         # TODO(rcadene): add info["is_success"] and info["success"] ?
 
