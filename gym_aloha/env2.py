@@ -29,6 +29,7 @@ class AlohaEnv2(gym.Env):
         visualization_width=640,
         visualization_height=480,
         camera_list=CAMERA_LIST,
+        stage=0,
     ):
         super().__init__()
         self.task = task
@@ -39,7 +40,7 @@ class AlohaEnv2(gym.Env):
         self.visualization_width = visualization_width
         self.visualization_height = visualization_height
         self.camera_list = camera_list
-
+        self.stage = stage
         self._env = self._make_env_task(self.task)
 
         if self.obs_type == "state":
@@ -87,14 +88,6 @@ class AlohaEnv2(gym.Env):
             if visualize
             else (self.observation_width, self.observation_height)
         )
-        # if mode in ["visualize", "human"]:
-        #     height, width = self.visualize_height, self.visualize_width
-        # elif mode == "rgb_array":
-        #     height, width = self.observation_height, self.observation_width
-        # else:
-        #     raise ValueError(mode)
-        # TODO(rcadene): render and visualizer several cameras (e.g. angle, front_close)
-
         if self.render_mode == "rgb_array_list":
             images = [
                 self._env.physics.render(height=height, width=width, camera_id=cam)
@@ -143,7 +136,7 @@ class AlohaEnv2(gym.Env):
 
         # TODO(rcadene): do not use global variable for this
         if self.task == "transfer_cube":
-            BOX_POSE[0] = np.concatenate(sample_transfer_box_pose(seed))  # used in sim reset
+            BOX_POSE[0] = np.concatenate(sample_transfer_box_pose(seed, self.stage))  # used in sim reset
         elif self.task == "insertion":
             BOX_POSE[0] = np.concatenate(sample_insertion_pose(seed))  # used in sim reset
         else:
@@ -184,3 +177,6 @@ class AlohaEnv2(gym.Env):
 
     def close(self):
         pass
+
+    def set_stage(self, stage):
+        self.stage = stage
