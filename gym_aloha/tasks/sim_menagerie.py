@@ -170,3 +170,24 @@ class TransferCubeTask(BimanualViperXTask):
         if touch_goal and not in_gripper:  # successful placement
             reward = 4
         return reward
+
+
+class InsertionTask(BimanualViperXTask):
+    def __init__(self, camera_list=CAMERA_LIST, random=None):
+        super().__init__(camera_list=camera_list, random=random)
+        self.max_reward = 4  # TODO
+
+    def initialize_episode(self, physics):
+        """Sets the state of the environment at the start of each episode."""
+        # TODO
+        super().initialize_episode(physics)
+
+    @staticmethod
+    def get_env_state(physics):
+        env_state = physics.data.qpos.copy()[16:]
+        return env_state
+
+    def get_reward(self, physics):
+        # TODO
+        reward = 0
+        return reward

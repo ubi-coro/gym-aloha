@@ -11,7 +11,7 @@ from gym_aloha.constants import (
     MENAGERIE_ASSETS_DIR,
     START_ARM_POSE,
 )
-from gym_aloha.tasks.sim_menagerie import BOX_POSE, CAMERA_LIST, TransferCubeTask
+from gym_aloha.tasks.sim_menagerie import BOX_POSE, CAMERA_LIST, InsertionTask, TransferCubeTask
 from gym_aloha.utils import sample_insertion_pose, sample_transfer_box_pose
 
 
@@ -106,6 +106,10 @@ class AlohaEnv(gym.Env):
             xml_path = MENAGERIE_ASSETS_DIR / "aloha_transfer_cube.xml"
             physics = mujoco.Physics.from_xml_path(str(xml_path))
             task = TransferCubeTask(self.camera_list)
+        elif task_name == "insertion":
+            xml_path = MENAGERIE_ASSETS_DIR / "aloha_insertion.xml"
+            physics = mujoco.Physics.from_xml_path(str(xml_path))
+            task = InsertionTask(self.camera_list)
         else:
             raise NotImplementedError(task_name)
 
