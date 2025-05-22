@@ -1,6 +1,10 @@
+import importlib
+
 import gymnasium as gym
 import imageio
 import numpy as np
+
+gym_aloha = importlib.import_module("gym_aloha")
 
 env = gym.make("gym_aloha/AlohaInsertion-v0")
 observation, info = env.reset()

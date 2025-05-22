@@ -1,8 +1,10 @@
+import importlib
 import os
 
 import gymnasium as gym
 import mujoco.viewer
 
+gym_aloha = importlib.import_module("gym_aloha")
 os.environ["MUJOCO_GL"] = "egl"
 
 env = gym.make("gym_aloha/AlohaTransferCube-v1")
