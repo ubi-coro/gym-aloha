@@ -6,30 +6,31 @@ from gymnasium import spaces
 
 from gym_aloha.constants import (
     ACTIONS,
+    ASSETS_DIR,
     DT,
     JOINTS,
-    MENAGERIE_ASSETS_DIR,
-    START_ARM_POSE,
 )
-from gym_aloha.tasks.sim_menagerie import BOX_POSE, CAMERA_LIST, TransferCubeTask
-from gym_aloha.utils import sample_insertion_pose, sample_transfer_box_pose
+from gym_aloha.tasks.sim import BOX_POSE, InsertionTask, TransferCubeTask
+from gym_aloha.tasks.sim_end_effector import (
+    InsertionEndEffectorTask,
+    TransferCubeEndEffectorTask,
+)
+from gym_aloha.utils import sample_box_pose, sample_insertion_pose
 
 
-class AlohaEnv2(gym.Env):
+class AlohaEnv(gym.Env):
     # TODO(aliberts): add "human" render_mode
-    metadata = {"render_modes": ["rgb_array", "rgb_array_list"], "render_fps": 50}
+    metadata = {"render_modes": ["rgb_array"], "render_fps": 50}
 
     def __init__(
         self,
         task,
         obs_type="pixels",
-        render_mode="rgb_array_list",
+        render_mode="rgb_array",
         observation_width=640,
         observation_height=480,
         visualization_width=640,
         visualization_height=480,
-        camera_list=CAMERA_LIST,
-        stage=0,
     ):
         super().__init__()
         self.task = task
@@ -39,8 +40,7 @@ class AlohaEnv2(gym.Env):
         self.observation_height = observation_height
         self.visualization_width = visualization_width
         self.visualization_height = visualization_height
-        self.camera_list = camera_list
-        self.stage = stage
+
         self._env = self._make_env_task(self.task)
 
         if self.obs_type == "state":
@@ -51,11 +51,29 @@ class AlohaEnv2(gym.Env):
                 dtype=np.float64,
             )
         elif self.obs_type == "pixels":
-            self.observation_space = self.get_cams()
+            self.observation_space = spaces.Dict(
+                {
+                    "top": spaces.Box(
+                        low=0,
+                        high=255,
+                        shape=(self.observation_height, self.observation_width, 3),
+                        dtype=np.uint8,
+                    )
+                }
+            )
         elif self.obs_type == "pixels_agent_pos":
             self.observation_space = spaces.Dict(
                 {
-                    "pixels": self.get_cams(),
+                    "pixels": spaces.Dict(
+                        {
+                            "top": spaces.Box(
+                                low=0,
+                                high=255,
+                                shape=(self.observation_height, self.observation_width, 3),
+                                dtype=np.uint8,
+                            )
+                        }
+                    ),
                     "agent_pos": spaces.Box(
                         low=-1000.0,
                         high=1000.0,
@@ -67,45 +85,48 @@ class AlohaEnv2(gym.Env):
 
         self.action_space = spaces.Box(low=-1, high=1, shape=(len(ACTIONS),), dtype=np.float32)
 
-    def get_cams(self):
-        cam_dict = {}
-        for cam in self.camera_list:
-            cam_dict[cam] = spaces.Box(
-                low=0,
-                high=255,
-                shape=(self.observation_height, self.observation_width, 3),
-                dtype=np.uint8,
-            )
-        return spaces.Dict(cam_dict)
-
     def render(self):
         return self._render(visualize=True)
 
     def _render(self, visualize=False):
-        assert self.render_mode in ["rgb_array", "rgb_array_list"]
+        assert self.render_mode == "rgb_array"
         width, height = (
             (self.visualization_width, self.visualization_height)
             if visualize
             else (self.observation_width, self.observation_height)
         )
-        if self.render_mode == "rgb_array_list":
-            images = [
-                self._env.physics.render(height=height, width=width, camera_id=cam)
-                for cam in self.camera_list
-            ]
-            return images
-        else:  # self.render_mode == "rgb_array"
-            image = self._env.physics.render(height=height, width=width, camera_id="wrist_cam_right")
-            return image
+        # if mode in ["visualize", "human"]:
+        #     height, width = self.visualize_height, self.visualize_width
+        # elif mode == "rgb_array":
+        #     height, width = self.observation_height, self.observation_width
+        # else:
+        #     raise ValueError(mode)
+        # TODO(rcadene): render and visualizer several cameras (e.g. angle, front_close)
+        image = self._env.physics.render(height=height, width=width, camera_id="top")
+        return image
 
     def _make_env_task(self, task_name):
         # time limit is controlled by StepCounter in env factory
         time_limit = float("inf")
 
         if task_name == "transfer_cube":
-            xml_path = MENAGERIE_ASSETS_DIR / "aloha_transfer_cube.xml"
+            xml_path = ASSETS_DIR / "bimanual_viperx_transfer_cube.xml"
             physics = mujoco.Physics.from_xml_path(str(xml_path))
-            task = TransferCubeTask(self.camera_list)
+            task = TransferCubeTask()
+        elif task_name == "insertion":
+            xml_path = ASSETS_DIR / "bimanual_viperx_insertion.xml"
+            physics = mujoco.Physics.from_xml_path(str(xml_path))
+            task = InsertionTask()
+        elif task_name == "end_effector_transfer_cube":
+            raise NotImplementedError()
+            xml_path = ASSETS_DIR / "bimanual_viperx_end_effector_transfer_cube.xml"
+            physics = mujoco.Physics.from_xml_path(str(xml_path))
+            task = TransferCubeEndEffectorTask()
+        elif task_name == "end_effector_insertion":
+            raise NotImplementedError()
+            xml_path = ASSETS_DIR / "bimanual_viperx_end_effector_insertion.xml"
+            physics = mujoco.Physics.from_xml_path(str(xml_path))
+            task = InsertionEndEffectorTask()
         else:
             raise NotImplementedError(task_name)
 
@@ -118,10 +139,10 @@ class AlohaEnv2(gym.Env):
         if self.obs_type == "state":
             raise NotImplementedError()
         elif self.obs_type == "pixels":
-            obs = {"wrist_cam_right": raw_obs["images"]["wrist_cam_right"].copy()}
+            obs = {"top": raw_obs["images"]["top"].copy()}
         elif self.obs_type == "pixels_agent_pos":
             obs = {
-                "pixels": {cam: raw_obs["images"][cam].copy() for cam in self.camera_list},
+                "pixels": {"top": raw_obs["images"]["top"].copy()},
                 "agent_pos": raw_obs["qpos"],
             }
         return obs
@@ -136,7 +157,7 @@ class AlohaEnv2(gym.Env):
 
         # TODO(rcadene): do not use global variable for this
         if self.task == "transfer_cube":
-            BOX_POSE[0] = np.concatenate(sample_transfer_box_pose(seed, self.stage))  # used in sim reset
+            BOX_POSE[0] = sample_box_pose(seed)  # used in sim reset
         elif self.task == "insertion":
             BOX_POSE[0] = np.concatenate(sample_insertion_pose(seed))  # used in sim reset
         else:
@@ -144,17 +165,12 @@ class AlohaEnv2(gym.Env):
 
         raw_obs = self._env.reset()
 
-        for _ in range(1000):
-            self._env.physics.step()  # hotfix to prevent the gripper from getting stuck when the leader gripper is closed at the beginning TODO(jzilke)
-
-        raw_obs = self._env._task.get_observation(self._env.physics)
-        observation = self._format_raw_obs(raw_obs)
+        observation = self._format_raw_obs(raw_obs.observation)
 
         info = {"is_success": False}
         return observation, info
 
     def step(self, action):
-        # global START_ARM_POSE
         assert action.ndim == 1
         # TODO(rcadene): add info["is_success"] and info["success"] ?
 
@@ -168,15 +184,7 @@ class AlohaEnv2(gym.Env):
         observation = self._format_raw_obs(raw_obs)
 
         truncated = False
-        START_ARM_POSE[:16] = self._env.physics.named.data.qpos[:16]
         return observation, reward, terminated, truncated, info
-
-    def get_ncams(self):
-        cams = self.get_cams()
-        return len(cams.spaces)
 
     def close(self):
         pass
-
-    def set_stage(self, stage):
-        self.stage = stage
