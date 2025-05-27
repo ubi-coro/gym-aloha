@@ -50,10 +50,9 @@ def sample_transfer_box_pose(seed=None, stage=0):
 
 def sample_insertion_pose(seed=None):
     # Peg
-    x_range = [0.1, 0.2]
-    y_range = [0.4, 0.6]
-    z_range = [0.05, 0.05]
-
+    x_range = [0.05, 0.2]
+    y_range = [-0.2, 0.2]
+    z_range = [0.15, 0.15]
     rng = np.random.RandomState(seed)
 
     ranges = np.vstack([x_range, y_range, z_range])
@@ -63,9 +62,9 @@ def sample_insertion_pose(seed=None):
     peg_pose = np.concatenate([peg_position, peg_quat])
 
     # Socket
-    x_range = [-0.2, -0.1]
-    y_range = [0.4, 0.6]
-    z_range = [0.05, 0.05]
+    x_range = [-0.2, -0.05]
+    y_range = [-0.2, 0.2]
+    z_range = [0.15, 0.15]
 
     ranges = np.vstack([x_range, y_range, z_range])
     socket_position = rng.uniform(ranges[:, 0], ranges[:, 1])
@@ -74,3 +73,42 @@ def sample_insertion_pose(seed=None):
     socket_pose = np.concatenate([socket_position, socket_quat])
 
     return peg_pose, socket_pose
+
+
+def sample_stacking_pose(seed=None):
+    # Box 1
+    x_range = [-0.15, -0.05]
+    y_range = [-0.2, -0.1]
+    z_range = [0.15, 0.15]
+
+    rng = np.random.RandomState(seed)
+
+    ranges = np.vstack([x_range, y_range, z_range])
+    box1_position = rng.uniform(ranges[:, 0], ranges[:, 1])
+
+    box1_quat = np.array([1, 0, 0, 0])
+    box1_pose = np.concatenate([box1_position, box1_quat])
+
+    # Box 2
+    x_range = [0.05, 0.2]
+    y_range = [-0.2, 0.2]
+    z_range = [0.15, 0.15]
+
+    ranges = np.vstack([x_range, y_range, z_range])
+    box2_position = rng.uniform(ranges[:, 0], ranges[:, 1])
+
+    box2_quat = np.array([1, 0, 0, 0])
+    box2_pose = np.concatenate([box2_position, box2_quat])
+
+    # Box 3
+    x_range = [-0.2, -0.05]
+    y_range = [0.1, 0.2]
+    z_range = [0.15, 0.15]
+
+    ranges = np.vstack([x_range, y_range, z_range])
+    box3_position = rng.uniform(ranges[:, 0], ranges[:, 1])
+
+    box3_quat = np.array([1, 0, 0, 0])
+    box3_pose = np.concatenate([box3_position, box3_quat])
+
+    return box1_pose, box2_pose, box3_pose

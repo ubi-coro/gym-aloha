@@ -1,0 +1,24 @@
+<mujoco>
+    <include file="scene.xml"/>
+    <worldbody>
+
+        <body name="box_1" pos="0.1 0.0 0.06">
+            <joint name="box_1_joint" type="free" frictionloss="0.01" />
+            <inertial pos="0 0 0" mass="0.05" diaginertia="0.002 0.002 0.002" />
+            <geom condim="4" solimp="2 1 0.01" solref="0.01 1" friction="1 0.005 0.0001" pos="0 0 0" size="0.02 0.02 0.02" type="box" name="box_1" rgba="0.5 0 0 1" />
+        </body>
+
+        <body name="box_2" pos="0.2 0.0 0.06">
+            <joint name="box_2_joint" type="free" frictionloss="0.01" />
+            <inertial pos="0 0 0" mass="0.05" diaginertia="0.002 0.002 0.002" />
+            <geom condim="4" solimp="2 1 0.01" solref="0.01 1" friction="1 0.005 0.0001" pos="0 0 0" size="0.018 0.018 0.018" type="box" name="box_2" rgba="0.6 0.6 0 1" />
+        </body>
+
+        <body name="box_3" pos="0.3 0.0 0.06">
+            <joint name="box_3_joint" type="free" frictionloss="0.01" />
+            <inertial pos="0 0 0" mass="0.05" diaginertia="0.002 0.002 0.002" />
+            <geom condim="4" solimp="2 1 0.01" solref="0.01 1" friction="1 0.005 0.0001" pos="0 0 0" size="0.015 0.015 0.015" type="box" name="box_3" rgba="0 0.5 0 1" />
+        </body>
+
+    </worldbody>
+</mujoco>

@@ -11,8 +11,8 @@ from gym_aloha.constants import (
     MENAGERIE_ASSETS_DIR,
     START_ARM_POSE,
 )
-from gym_aloha.tasks.sim_menagerie import BOX_POSE, CAMERA_LIST, InsertionTask, TransferCubeTask
-from gym_aloha.utils import sample_insertion_pose, sample_transfer_box_pose
+from gym_aloha.tasks.sim_menagerie import BOX_POSE, CAMERA_LIST, InsertionTask, StackingTask, TransferCubeTask
+from gym_aloha.utils import sample_insertion_pose, sample_stacking_pose, sample_transfer_box_pose
 
 
 class AlohaEnv(gym.Env):
@@ -104,12 +104,17 @@ class AlohaEnv(gym.Env):
 
         if task_name == "transfer_cube":
             xml_path = MENAGERIE_ASSETS_DIR / "aloha_transfer_cube.xml"
+            print("Loading XML from:", xml_path)
             physics = mujoco.Physics.from_xml_path(str(xml_path))
             task = TransferCubeTask(self.camera_list)
         elif task_name == "insertion":
             xml_path = MENAGERIE_ASSETS_DIR / "aloha_insertion.xml"
             physics = mujoco.Physics.from_xml_path(str(xml_path))
             task = InsertionTask(self.camera_list)
+        elif task_name == "stacking":
+            xml_path = MENAGERIE_ASSETS_DIR / "aloha_stacking.xml"
+            physics = mujoco.Physics.from_xml_path(str(xml_path))
+            task = StackingTask(self.camera_list)
         else:
             raise NotImplementedError(task_name)
 
@@ -143,6 +148,8 @@ class AlohaEnv(gym.Env):
             BOX_POSE[0] = np.concatenate(sample_transfer_box_pose(seed, self.stage))  # used in sim reset
         elif self.task == "insertion":
             BOX_POSE[0] = np.concatenate(sample_insertion_pose(seed))  # used in sim reset
+        elif self.task == "stacking":
+            BOX_POSE[0] = np.concatenate(sample_stacking_pose(seed))  # used in sim reset
         else:
             raise ValueError(self.task)
 

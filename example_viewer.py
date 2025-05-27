@@ -7,7 +7,7 @@ import mujoco.viewer
 gym_aloha = importlib.import_module("gym_aloha")
 os.environ["MUJOCO_GL"] = "egl"
 
-env = gym.make("gym_aloha/AlohaInsertion-v1")
+env = gym.make("gym_aloha/AlohaStacking-v0")
 observation, info = env.reset()
 
 

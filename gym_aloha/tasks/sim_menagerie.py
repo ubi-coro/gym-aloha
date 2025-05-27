@@ -175,11 +175,19 @@ class TransferCubeTask(BimanualViperXTask):
 class InsertionTask(BimanualViperXTask):
     def __init__(self, camera_list=CAMERA_LIST, random=None):
         super().__init__(camera_list=camera_list, random=random)
-        self.max_reward = 4  # TODO
+        self.max_reward = 4  # TODO(jzilke)
 
     def initialize_episode(self, physics):
         """Sets the state of the environment at the start of each episode."""
-        # TODO
+        with physics.reset_context():
+            physics.named.data.qpos[:16] = START_ARM_POSE
+            start_pose = START_ARM_POSE[:7] + START_ARM_POSE[8:15]
+            np.copyto(physics.data.ctrl, start_pose)
+            assert BOX_POSE[0] is not None
+            physics.named.data.qpos[-7 * 2 :] = BOX_POSE[0]
+            # physics.named.data.qpos[-7:] = BOX_POSE[0][:7]
+            # physics.model.body_pos[physics.model.name2id("goal_pos", "body")] = BOX_POSE[0][7:10]
+            # print(f"{BOX_POSE=}")
         super().initialize_episode(physics)
 
     @staticmethod
@@ -188,6 +196,102 @@ class InsertionTask(BimanualViperXTask):
         return env_state
 
     def get_reward(self, physics):
-        # TODO
+        # return whether peg touches the pin
+        all_contact_pairs = []
+        for i_contact in range(physics.data.ncon):
+            id_geom_1 = physics.data.contact[i_contact].geom1
+            id_geom_2 = physics.data.contact[i_contact].geom2
+            name_geom_1 = physics.model.id2name(id_geom_1, "geom")
+            name_geom_2 = physics.model.id2name(id_geom_2, "geom")
+            all_contact_pairs.append((name_geom_1, name_geom_2))
+            all_contact_pairs.append((name_geom_2, name_geom_1))
+
+        touch_right_gripper = ("red_peg", "right/left_g0") in all_contact_pairs or (
+            "red_peg",
+            "right/left_g1",
+        ) in all_contact_pairs
+        touch_left_gripper = (
+            ("socket-1", "left/left_g0") in all_contact_pairs
+            or ("socket-2", "left/left_g0") in all_contact_pairs
+            or ("socket-3", "left/left_g0") in all_contact_pairs
+            or ("socket-4", "left/left_g0") in all_contact_pairs
+            or ("socket-1", "left/left_g1") in all_contact_pairs
+            or ("socket-2", "left/left_g1") in all_contact_pairs
+            or ("socket-3", "left/left_g1") in all_contact_pairs
+            or ("socket-4", "left/left_g1") in all_contact_pairs
+        )
+
+        peg_touch_table = ("red_peg", "table") in all_contact_pairs
+        socket_touch_table = (
+            ("socket-1", "table") in all_contact_pairs
+            or ("socket-2", "table") in all_contact_pairs
+            or ("socket-3", "table") in all_contact_pairs
+            or ("socket-4", "table") in all_contact_pairs
+        )
+        peg_touch_socket = (
+            ("red_peg", "socket-1") in all_contact_pairs
+            or ("red_peg", "socket-2") in all_contact_pairs
+            or ("red_peg", "socket-3") in all_contact_pairs
+            or ("red_peg", "socket-4") in all_contact_pairs
+        )
+        pin_touched = ("red_peg", "pin") in all_contact_pairs
+
         reward = 0
+        if touch_left_gripper and touch_right_gripper:  # touch both
+            reward = 1
+        if (
+            touch_left_gripper and touch_right_gripper and (not peg_touch_table) and (not socket_touch_table)
+        ):  # grasp both
+            reward = 2
+        if peg_touch_socket and (not peg_touch_table) and (not socket_touch_table):  # peg and socket touching
+            reward = 3
+        if pin_touched:  # successful insertion
+            reward = 4
+        return reward
+
+
+class StackingTask(BimanualViperXTask):
+    def __init__(self, camera_list=CAMERA_LIST, random=None):
+        super().__init__(camera_list=camera_list, random=random)
+        self.max_reward = 4  # TODO(jzilke)
+
+    def initialize_episode(self, physics):
+        """Sets the state of the environment at the start of each episode."""
+        with physics.reset_context():
+            physics.named.data.qpos[:16] = START_ARM_POSE
+            start_pose = START_ARM_POSE[:7] + START_ARM_POSE[8:15]
+            np.copyto(physics.data.ctrl, start_pose)
+            assert BOX_POSE[0] is not None
+            physics.named.data.qpos[-7 * 3 :] = BOX_POSE[0]
+            # physics.named.data.qpos[-7:] = BOX_POSE[0][:7]
+            # physics.model.body_pos[physics.model.name2id("goal_pos", "body")] = BOX_POSE[0][7:10]
+            # print(f"{BOX_POSE=}")
+        super().initialize_episode(physics)
+
+    @staticmethod
+    def get_env_state(physics):
+        env_state = physics.data.qpos.copy()[16:]
+        return env_state
+
+    def get_reward(self, physics):
+        # return whether peg touches the pin
+        all_contact_pairs = []
+        for i_contact in range(physics.data.ncon):
+            id_geom_1 = physics.data.contact[i_contact].geom1
+            id_geom_2 = physics.data.contact[i_contact].geom2
+            name_geom_1 = physics.model.id2name(id_geom_1, "geom")
+            name_geom_2 = physics.model.id2name(id_geom_2, "geom")
+            all_contact_pairs.append((name_geom_1, name_geom_2))
+            all_contact_pairs.append((name_geom_2, name_geom_1))
+
+        stack_1 = ("box_1", "box_2") in all_contact_pairs and ("box_2", "table") not in all_contact_pairs
+
+        stack_2 = (
+            stack_1
+            and ("box_2", "box_3") in all_contact_pairs
+            and ("box_3", "table") not in all_contact_pairs
+        )
+
+        reward = 0 if not stack_2 else 1
+        # TODO(jzilke)
         return reward
