@@ -278,6 +278,8 @@
   <contact>
     <exclude body1="left/base_link" body2="left/shoulder_link"/>
     <exclude body1="right/base_link" body2="right/shoulder_link"/>
+    <exclude body1="right/left_finger_link" body2="right/right_finger_link"/>
+    <exclude body1="left/left_finger_link" body2="left/right_finger_link"/>
   </contact>
 
   <equality>

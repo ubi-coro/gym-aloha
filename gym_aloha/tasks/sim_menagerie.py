@@ -253,7 +253,7 @@ class InsertionTask(BimanualViperXTask):
 class StackingTask(BimanualViperXTask):
     def __init__(self, camera_list=CAMERA_LIST, random=None):
         super().__init__(camera_list=camera_list, random=random)
-        self.max_reward = 4  # TODO(jzilke)
+        self.max_reward = 4
 
     def initialize_episode(self, physics):
         """Sets the state of the environment at the start of each episode."""
@@ -292,6 +292,18 @@ class StackingTask(BimanualViperXTask):
             and ("box_3", "table") not in all_contact_pairs
         )
 
-        reward = 0 if not stack_2 else 1
-        # TODO(jzilke)
+        reward = 0
+        if stack_1:
+            reward = 1
+        if stack_2:
+            reward = 2
+
+        box3_pos = physics.named.data.xpos["box_3"]
+        grip_right_pos = physics.named.data.xpos["right/right_finger_link"]
+        grip_left_pos = physics.named.data.xpos["left/left_finger_link"]
+        distance_right = np.linalg.norm(grip_right_pos - box3_pos)
+        distance_left = np.linalg.norm(grip_left_pos - box3_pos)
+
+        if stack_2 and min(distance_right, distance_left) > 0.4:
+            reward = self.max_reward
         return reward

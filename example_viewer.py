@@ -23,8 +23,9 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
     viewer.user_scn.flags[mujoco.mjtRndFlag.mjRND_CULL_FACE] = 0
     viewer.sync()
     while viewer.is_running():
-        # no env.step()
-        mujoco.mj_step(model, data)
+        action = env.action_space.sample()
+        env.step(action)
+        # mujoco.mj_step(model, data)
         viewer.sync()
 
 

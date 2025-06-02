@@ -50,9 +50,9 @@ def sample_transfer_box_pose(seed=None, stage=0):
 
 def sample_insertion_pose(seed=None):
     # Peg
-    x_range = [0.05, 0.2]
-    y_range = [-0.2, 0.2]
-    z_range = [0.15, 0.15]
+    x_range = [0.05, 0.15]
+    y_range = [-0.12, 0.12]
+    z_range = [0.1, 0.1]
     rng = np.random.RandomState(seed)
 
     ranges = np.vstack([x_range, y_range, z_range])
@@ -62,9 +62,9 @@ def sample_insertion_pose(seed=None):
     peg_pose = np.concatenate([peg_position, peg_quat])
 
     # Socket
-    x_range = [-0.2, -0.05]
-    y_range = [-0.2, 0.2]
-    z_range = [0.15, 0.15]
+    x_range = [-0.15, -0.05]
+    y_range = [-0.12, 0.12]
+    z_range = [0.1, 0.1]
 
     ranges = np.vstack([x_range, y_range, z_range])
     socket_position = rng.uniform(ranges[:, 0], ranges[:, 1])
