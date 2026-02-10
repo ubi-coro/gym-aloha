@@ -1,7 +1,7 @@
 import mujoco
 from mujoco import viewer
 
-MODEL = "/home/jzilke/ws/gym-aloha/assets/universal_robots_ur5e/scene.xml"   # path to your xml
+MODEL = "/home/jzilke/ws/gym-aloha/assets/ur5e_gripper/scene.xml"
 
 m = mujoco.MjModel.from_xml_path(MODEL)
 d = mujoco.MjData(m)
