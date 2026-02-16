@@ -1,7 +1,7 @@
 <mujoco model="ur5e">
-  <compiler angle="radian" meshdir="assets" autolimits="true"/>
+    <compiler angle="radian" meshdir="assets" autolimits="true"/>
 
-  <option integrator="implicitfast"/>
+    <option integrator="implicitfast"/>
 
     <default>
         <default class="ur5e">
@@ -109,7 +109,8 @@
         <mesh file="ur5e/wrist3.obj"/>
     </asset>
 
-   <worldbody>
+    <worldbody>
+        <camera name="teleoperator_pov" pos="0 -1.354 0.685" xyaxes="1 0 0 0 0.2 .8"/>
         <light name="left/spotlight" mode="targetbodycom" target="left/wrist_2_link" pos="-0.5 -1 2"/>
         <light name="right/spotlight" mode="targetbodycom" target="right/wrist_2_link" pos="0.5 -1 2"/>
         <body name="left/base" quat="0 0 0 -1" childclass="ur5e" pos="-0.5 -0.019 0">
@@ -164,9 +165,9 @@
                                     <geom class="eef_collision" pos="0 0.08 0" quat="1 1 0 0" size="0.04 0.02"/>
                                     <site name="left/attachment_site" pos="0 0.1 0" quat="-1 1 0 0"/>
 
-<!--###################################################################################################################-->
-<!--###################################################### GRIPPER ####################################################-->
-<!--###################################################################################################################-->
+                                    <!--###################################################################################################################-->
+                                    <!--###################################################### GRIPPER ####################################################-->
+                                    <!--###################################################################################################################-->
                                     <body name="left/base_mount" pos="0 0.1 0" quat="-1 1 0 0" childclass="2f85">
                                         <geom class="visual" mesh="base_mount" material="2f85_black"/>
                                         <geom class="2f85_collision" mesh="base_mount"/>
@@ -279,10 +280,10 @@
             </body>
         </body>
 
-<!-- ########################################################################################## -->
-<!-- ##############################    SECOND ARM   ########################################### -->
-<!-- ########################################################################################## -->
-       <body name="right/base" quat="0 0 0 -1" childclass="ur5e" pos="0.5 -0.019 0">
+        <!-- ########################################################################################## -->
+        <!-- ##############################    SECOND ARM   ########################################### -->
+        <!-- ########################################################################################## -->
+        <body name="right/base" quat="0 0 0 -1" childclass="ur5e" pos="0.5 -0.019 0">
             <inertial mass="4.0" pos="0 0 0" diaginertia="0.00443333156 0.00443333156 0.0072"/>
             <geom mesh="base_0" material="black" class="visual"/>
             <geom mesh="base_1" material="jointgray" class="visual"/>
@@ -334,9 +335,9 @@
                                     <geom class="eef_collision" pos="0 0.08 0" quat="1 1 0 0" size="0.04 0.02"/>
                                     <site name="right/attachment_site" pos="0 0.1 0" quat="-1 1 0 0"/>
 
-<!--###################################################################################################################-->
-<!--###################################################### GRIPPER ####################################################-->
-<!--###################################################################################################################-->
+                                    <!--###################################################################################################################-->
+                                    <!--###################################################### GRIPPER ####################################################-->
+                                    <!--###################################################################################################################-->
                                     <body name="right/base_mount" pos="0 0.1 0" quat="-1 1 0 0" childclass="2f85">
                                         <geom class="visual" mesh="base_mount" material="2f85_black"/>
                                         <geom class="2f85_collision" mesh="base_mount"/>
@@ -479,14 +480,20 @@
     </tendon>
 
     <equality>
-        <connect anchor="0 0 0" body1="left/right_follower" body2="left/right_coupler" solimp="0.95 0.99 0.001" solref="0.005 1"/>
-        <connect anchor="0 0 0" body1="left/left_follower" body2="left/left_coupler" solimp="0.95 0.99 0.001" solref="0.005 1"/>
-        <joint joint1="left/right_driver_joint" joint2="left/left_driver_joint" polycoef="0 1 0 0 0" solimp="0.95 0.99 0.001"
+        <connect anchor="0 0 0" body1="left/right_follower" body2="left/right_coupler" solimp="0.95 0.99 0.001"
+                 solref="0.005 1"/>
+        <connect anchor="0 0 0" body1="left/left_follower" body2="left/left_coupler" solimp="0.95 0.99 0.001"
+                 solref="0.005 1"/>
+        <joint joint1="left/right_driver_joint" joint2="left/left_driver_joint" polycoef="0 1 0 0 0"
+               solimp="0.95 0.99 0.001"
                solref="0.005 1"/>
 
-        <connect anchor="0 0 0" body1="right/right_follower" body2="right/right_coupler" solimp="0.95 0.99 0.001" solref="0.005 1"/>
-        <connect anchor="0 0 0" body1="right/left_follower" body2="right/left_coupler" solimp="0.95 0.99 0.001" solref="0.005 1"/>
-        <joint joint1="right/right_driver_joint" joint2="right/left_driver_joint" polycoef="0 1 0 0 0" solimp="0.95 0.99 0.001"
+        <connect anchor="0 0 0" body1="right/right_follower" body2="right/right_coupler" solimp="0.95 0.99 0.001"
+                 solref="0.005 1"/>
+        <connect anchor="0 0 0" body1="right/left_follower" body2="right/left_coupler" solimp="0.95 0.99 0.001"
+                 solref="0.005 1"/>
+        <joint joint1="right/right_driver_joint" joint2="right/left_driver_joint" polycoef="0 1 0 0 0"
+               solimp="0.95 0.99 0.001"
                solref="0.005 1"/>
     </equality>
 

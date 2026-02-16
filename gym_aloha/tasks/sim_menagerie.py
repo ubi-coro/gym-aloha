@@ -103,7 +103,6 @@ class BimanualViperXTask(base.Task):
         return obs
 
     def get_reward(self, physics):
-        # return whether left gripper is holding the box
         raise NotImplementedError
 
 

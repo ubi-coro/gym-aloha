@@ -12,7 +12,7 @@ from gym_aloha.constants import (
     START_ARM_POSE,
 )
 from gym_aloha.tasks.sim_menagerie import BOX_POSE, CAMERA_LIST, InsertionTask, StackingTask, TransferCubeTask
-from gym_aloha.utils import sample_insertion_pose, sample_stacking_pose, sample_transfer_box_pose
+from gym_aloha.tasks.ur5e_tasks import EmptyTask
 
 
 class Ur5eEnv(gym.Env):
@@ -25,7 +25,7 @@ class Ur5eEnv(gym.Env):
         render_mode="rgb_array_list",
         observation_width=640,
         observation_height=480,
-        camera_list=None,
+        camera_list=["teleoperator_pov"],
     ):
         super().__init__()
         if camera_list is None:
@@ -38,17 +38,20 @@ class Ur5eEnv(gym.Env):
         self.camera_list = camera_list
         self._env = self._make_env_task(self.task)
 
-        self.observation_space = spaces.Dict(
-            {
-                "pixels": self.get_cams(),
-                "agent_pos": spaces.Box(
-                    low=-1000.0,
-                    high=1000.0,
-                    shape=(len(JOINTS),),
-                    dtype=np.float64,
-                ),
-            }
-        )
+        if self.obs_type == "pixels":
+            self.observation_space = self.get_cams()
+        elif self.obs_type == "pixels_agent_pos":
+            self.observation_space = spaces.Dict(
+                {
+                    "pixels": self.get_cams(),
+                    "agent_pos": spaces.Box(
+                        low=-1000.0,
+                        high=1000.0,
+                        shape=(len(JOINTS),),
+                        dtype=np.float64,
+                    ),
+                }
+            )
 
         self.action_space = spaces.Box(low=-1, high=1, shape=(len(ACTIONS),), dtype=np.float32)
 
@@ -66,7 +69,7 @@ class Ur5eEnv(gym.Env):
     def render(self):
         return self._render(visualize=True)
 
-    def _render(self, visualize=False):
+    def _render(self):
         assert self.render_mode in ["rgb_array", "rgb_array_list"]
         width, height = self.observation_width, self.observation_height
         images = [
@@ -79,19 +82,11 @@ class Ur5eEnv(gym.Env):
         # time limit is controlled by StepCounter in env factory
         time_limit = float("inf")
 
-        if task_name == "transfer_cube":
-            xml_path = MENAGERIE_ASSETS_DIR / "aloha_transfer_cube.xml"
+        if task_name == "empty":
+            xml_path = "/home/jzilke/ws/gym-aloha/assets/ur5e_gripper/scene.xml"
             print("Loading XML from:", xml_path)
             physics = mujoco.Physics.from_xml_path(str(xml_path))
-            task = TransferCubeTask(self.camera_list)
-        elif task_name == "insertion":
-            xml_path = MENAGERIE_ASSETS_DIR / "aloha_insertion.xml"
-            physics = mujoco.Physics.from_xml_path(str(xml_path))
-            task = InsertionTask(self.camera_list)
-        elif task_name == "stacking":
-            xml_path = MENAGERIE_ASSETS_DIR / "aloha_stacking.xml"
-            physics = mujoco.Physics.from_xml_path(str(xml_path))
-            task = StackingTask(self.camera_list)
+            task = EmptyTask(self.camera_list)
         else:
             raise NotImplementedError(task_name)
 
@@ -104,7 +99,7 @@ class Ur5eEnv(gym.Env):
         if self.obs_type == "state":
             raise NotImplementedError()
         elif self.obs_type == "pixels":
-            obs = {"wrist_cam_right": raw_obs["images"]["wrist_cam_right"].copy()}
+            obs = {"teleoperator_pov": raw_obs["images"]["teleoperator_pov"].copy()}
         elif self.obs_type == "pixels_agent_pos":
             obs = {
                 "pixels": {cam: raw_obs["images"][cam].copy() for cam in self.camera_list},
@@ -115,12 +110,10 @@ class Ur5eEnv(gym.Env):
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
 
-        # TODO(rcadene): how to seed the env?
         if seed is not None:
             self._env.task.random.seed(seed)
             self._env.task._random = np.random.RandomState(seed)
 
-        # TODO(rcadene): do not use global variable for this
         if self.task == "TODO":
             raise ValueError(self.task)
 
@@ -134,7 +127,6 @@ class Ur5eEnv(gym.Env):
         assert action.ndim == 1
         _, reward, _, raw_obs = self._env.step(action)
 
-        # TODO(rcadene): add an enum
         terminated = is_success = False
 
         info = {"is_success": is_success}

@@ -50,3 +50,13 @@ register(
     nondeterministic=True,
     kwargs={"obs_type": "pixels", "task": "transfer_cube"},
 )
+
+register(
+    id="gym_aloha/Ur5eEmpty-v0",
+    entry_point="gym_aloha.ur5e_env:Ur5eEnv",
+    max_episode_steps=300,
+    # Even after seeding, the rendered observations are slightly different,
+    # so we set `nondeterministic=True` to pass `check_env` tests
+    nondeterministic=True,
+    kwargs={"obs_type": "pixels", "task": "empty"},
+)
